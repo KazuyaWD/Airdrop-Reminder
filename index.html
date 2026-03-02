@@ -7,11 +7,23 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #0f172a; color: white; transition: all 0.3s; }
-        .group-container { background: #1e293b; border-radius: 16px; padding: 1.25rem; margin-bottom: 2rem; border: 1px solid #334155; }
-        .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .group-container { background: #1e293b; border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid #334155; }
+        
+        /* Grid System */
+        .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; transition: all 0.3s ease; }
         @media (min-width: 640px) { .grid-layout { grid-template-columns: repeat(4, 1fr); } }
+        
+        /* Card Kotak */
         .card { background: #334155; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; align-items: center; text-align: center; aspect-ratio: 1 / 1; justify-content: space-between; transition: all 0.2s ease-in-out; position: relative; border: 1px solid transparent; }
         .done { opacity: 0.4; background: #1e293b; border: 1px dashed #475569; filter: grayscale(1); }
+        
+        /* Expand/Collapse */
+        .group-header { cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; }
+        .expand-icon { transition: transform 0.3s ease; display: inline-block; color: #64748b; font-weight: bold; }
+        .rotate-90 { transform: rotate(90deg); color: #3b82f6; }
+        .hidden-content { display: none !important; }
+
+        /* Modal Settings */
         .modal-bg { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(4px); }
         input, select { background: #0f172a; border: 1px solid #334155; color: white; padding: 10px; border-radius: 8px; width: 100%; }
     </style>
@@ -20,25 +32,48 @@
 
     <header class="mb-8 text-center">
         <h1 class="text-3xl font-black text-blue-500 tracking-tighter italic uppercase">Airdrop Cloud</h1>
-        <p id="current-date" class="text-slate-500 text-xs font-mono mt-1 tracking-widest uppercase">Connecting...</p>
+        <p id="current-date" class="text-slate-500 text-xs font-mono mt-1 tracking-widest">CONNECTING...</p>
     </header>
 
     <div id="dashboard">
         <div class="group-container">
-            <h2 class="text-sm font-black mb-4 text-green-400 uppercase tracking-widest flex items-center gap-2"><span>📅</span> Daily Tasks</h2>
-            <div id="group-Daily" class="grid-layout"></div>
+            <div class="group-header" onclick="toggleExpand('Daily')">
+                <h2 class="text-sm font-black text-green-400 uppercase tracking-widest flex items-center gap-2"><span>📅</span> Daily Tasks</h2>
+                <span id="icon-Daily" class="expand-icon">></span>
+            </div>
+            <div id="group-Daily" class="grid-layout mt-4"></div>
         </div>
+
         <div class="group-container">
-            <h2 class="text-sm font-black mb-4 text-orange-400 uppercase tracking-widest flex items-center gap-2"><span>🗓️</span> Weekly Check-in</h2>
-            <div id="group-Weekly" class="grid-layout"></div>
+            <div class="group-header" onclick="toggleExpand('Weekly')">
+                <h2 class="text-sm font-black text-orange-400 uppercase tracking-widest flex items-center gap-2"><span>🗓️</span> Weekly Check-in</h2>
+                <span id="icon-Weekly" class="expand-icon">></span>
+            </div>
+            <div id="group-Weekly" class="grid-layout mt-4"></div>
         </div>
+
         <div class="group-container">
-            <h2 class="text-sm font-black mb-4 text-yellow-400 uppercase tracking-widest flex items-center gap-2"><span>⏳</span> Waitlist</h2>
-            <div id="group-Waitlist" class="grid-layout"></div>
+            <div class="group-header" onclick="toggleExpand('Waitlist')">
+                <h2 class="text-sm font-black text-yellow-400 uppercase tracking-widest flex items-center gap-2"><span>⏳</span> Waitlist</h2>
+                <span id="icon-Waitlist" class="expand-icon">></span>
+            </div>
+            <div id="group-Waitlist" class="grid-layout mt-4"></div>
         </div>
+
         <div class="group-container">
-            <h2 class="text-sm font-black mb-4 text-purple-400 uppercase tracking-widest flex items-center gap-2"><span>🛠️</span> Testnet</h2>
-            <div id="group-Testnet" class="grid-layout"></div>
+            <div class="group-header" onclick="toggleExpand('Testnet')">
+                <h2 class="text-sm font-black text-purple-400 uppercase tracking-widest flex items-center gap-2"><span>🛠️</span> Testnet</h2>
+                <span id="icon-Testnet" class="expand-icon">></span>
+            </div>
+            <div id="group-Testnet" class="grid-layout mt-4"></div>
+        </div>
+
+         <div class="group-container">
+            <div class="group-header" onclick="toggleExpand('Task')">
+                <h2 class="text-sm font-black text-purple-400 uppercase tracking-widest flex items-center gap-2"><span>📜</span> Task</h2>
+                <span id="icon-Testnet" class="expand-icon">></span>
+            </div>
+            <div id="group-Task" class="grid-layout mt-4"></div>
         </div>
     </div>
 
@@ -53,6 +88,7 @@
                     <option value="Weekly">Weekly Check-in</option>
                     <option value="Waitlist">Waitlist</option>
                     <option value="Testnet">Testnet</option>
+                    <option value="Task">Task</option>
                 </select>
                 <div class="flex gap-2 pt-2">
                     <button onclick="toggleModal()" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">Cancel</button>
@@ -69,7 +105,7 @@
             <p class="text-slate-400 text-sm mb-6">Data ini akan dihapus permanen dari Cloud Database.</p>
             <div class="flex gap-2">
                 <button onclick="closeDeleteModal()" class="flex-1 bg-slate-700 py-2 rounded-lg font-bold">Batal</button>
-                <button id="confirmDeleteBtn" class="flex-1 bg-red-600 py-2 rounded-lg font-bold">Hapus</button>
+                <button id="confirmDeleteBtn" class="flex-1 bg-red-600 py-2 rounded-lg font-bold italic uppercase">Hapus</button>
             </div>
         </div>
     </div>
@@ -86,6 +122,7 @@
                 airdropData = await response.json();
                 document.getElementById('current-date').innerText = today.toUpperCase();
                 renderDashboard();
+                loadExpandStatus();
             } catch (err) {
                 document.getElementById('current-date').innerText = "OFFLINE";
             }
@@ -100,8 +137,7 @@
             if (!name || !link) return alert("Isi semua!");
             if (!link.startsWith('http')) link = 'https://' + link;
 
-            btn.innerText = "Saving...";
-            btn.disabled = true;
+            btn.innerText = "Saving..."; btn.disabled = true;
 
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'add', id: Date.now(), name, link, group }) });
@@ -109,47 +145,57 @@
                 btn.innerText = "Save"; btn.disabled = false;
                 document.getElementById('nameInput').value = ''; document.getElementById('linkInput').value = '';
                 setTimeout(fetchData, 1000);
-            } catch (err) { alert("Gagal!"); btn.disabled = false; }
+            } catch (err) { alert("Error!"); btn.disabled = false; }
         }
 
-        // FUNGSI MODAL DELETE CUSTOM
         function openDeleteModal(id) {
             deleteIdTarget = id;
             document.getElementById('deleteModal').classList.remove('hidden');
             document.getElementById('confirmDeleteBtn').onclick = async () => {
-                const btn = document.getElementById('confirmDeleteBtn');
-                btn.innerText = "...";
+                document.getElementById('confirmDeleteBtn').innerText = "...";
                 await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', id: deleteIdTarget }) });
                 closeDeleteModal();
-                btn.innerText = "Hapus";
+                document.getElementById('confirmDeleteBtn').innerText = "Hapus";
                 setTimeout(fetchData, 500);
             };
         }
 
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.add('hidden');
-            deleteIdTarget = null;
-        }
-
-        function toggleModal(group = 'Daily') {
-            document.getElementById('groupInput').value = group;
-            document.getElementById('modal').classList.toggle('hidden');
-        }
-
+        function closeDeleteModal() { document.getElementById('deleteModal').classList.add('hidden'); deleteIdTarget = null; }
+        function toggleModal(group = 'Daily') { document.getElementById('groupInput').value = group; document.getElementById('modal').classList.toggle('hidden'); }
+        
         function toggleStatus(key) {
             localStorage.getItem(key) ? localStorage.removeItem(key) : localStorage.setItem(key, 'true');
             renderDashboard();
         }
 
+        function toggleExpand(groupId) {
+            const content = document.getElementById(`group-${groupId}`);
+            const icon = document.getElementById(`icon-${groupId}`);
+            content.classList.toggle('hidden-content');
+            icon.classList.toggle('rotate-90');
+            localStorage.setItem(`expand_${groupId}`, !content.classList.contains('hidden-content'));
+        }
+
+        function loadExpandStatus() {
+            ['Daily', 'Weekly', 'Waitlist', 'Testnet', 'Task'].forEach(g => {
+                if (localStorage.getItem(`expand_${g}`) === 'false') {
+                    document.getElementById(`group-${g}`).classList.add('hidden-content');
+                    document.getElementById(`icon-${g}`).classList.remove('rotate-90');
+                } else {
+                    document.getElementById(`icon-${g}`).classList.add('rotate-90');
+                }
+            });
+        }
+
         function renderDashboard() {
-            const groups = ['Daily', 'Weekly', 'Waitlist', 'Testnet'];
+            const groups = ['Daily', 'Weekly', 'Waitlist', 'Testnet', 'Task'];
             groups.forEach(g => {
                 const container = document.getElementById(`group-${g}`);
                 container.innerHTML = '';
 
                 const addBtn = document.createElement('div');
                 addBtn.className = 'card border-2 border-dashed border-slate-600 bg-transparent cursor-pointer hover:border-blue-500';
-                addBtn.onclick = () => toggleModal(g);
+                addBtn.onclick = (e) => { e.stopPropagation(); toggleModal(g); };
                 addBtn.innerHTML = `<div class="flex flex-col items-center justify-center h-full"><span class="text-4xl text-blue-500">+</span><span class="text-[9px] mt-1 text-slate-500 font-black uppercase">Add New</span></div>`;
                 container.appendChild(addBtn);
 
@@ -160,9 +206,7 @@
                         const oneJan = new Date(now.getFullYear(), 0, 1);
                         const weekNum = Math.ceil((((now - oneJan) / 86400000) + oneJan.getDay() + 1) / 7);
                         storageKey = `status_${item.id}_week_${weekNum}_${now.getFullYear()}`;
-                    } else {
-                        storageKey = `status_${item.id}_${today}`;
-                    }
+                    } else { storageKey = `status_${item.id}_${today}`; }
 
                     const isDone = localStorage.getItem(storageKey);
                     const div = document.createElement('div');
@@ -181,6 +225,7 @@
                 });
             });
         }
+
         fetchData();
     </script>
 </body>
